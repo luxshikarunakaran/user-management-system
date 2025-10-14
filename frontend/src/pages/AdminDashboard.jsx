@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/userService";
 import { IconUsers, IconUserCog, IconSearch } from "../icons/index.jsx";
-import { Alert, LoadingState } from "../components/ui";
+import { Alert, LoadingState, Button } from "../components/ui";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["users", "list"],
@@ -31,10 +33,32 @@ export default function AdminDashboard() {
     [users]
   );
 
-  const handleRoleChange = () => {
-    // This will be handled by the Users page component
-    // For now, we'll just show a message
-    alert("Role changes should be made from the Users page");
+  // Mutation for changing user roles
+  const changeRoleMutation = useMutation({
+    mutationFn: ({ userId, newRole }) =>
+      userService.changeRole(userId, newRole),
+    onSuccess: () => {
+      // Refetch users list after successful role change
+      queryClient.invalidateQueries({ queryKey: ["users", "list"] });
+      setErrorMessage(""); // Clear any previous error
+    },
+    onError: (error) => {
+      console.error("Failed to change user role:", error);
+      setErrorMessage(
+        error?.response?.data?.message ||
+          "Failed to change user role. Please try again."
+      );
+    },
+  });
+
+  const handleRoleChange = async (userId, newRole) => {
+    setErrorMessage(""); // Clear previous errors
+    try {
+      await changeRoleMutation.mutateAsync({ userId, newRole });
+    } catch (error) {
+      console.error("Failed to change user role:", error);
+      // Error is handled by the mutation's onError
+    }
   };
 
   if (isLoading) {
@@ -122,6 +146,12 @@ export default function AdminDashboard() {
               View and manage all users in the system
             </p>
 
+            {errorMessage && (
+              <div className="mt-4">
+                <Alert type="error">{errorMessage}</Alert>
+              </div>
+            )}
+
             <div className="relative mt-4">
               <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input
@@ -167,15 +197,25 @@ export default function AdminDashboard() {
                       <label className="sr-only" htmlFor={`role-${user._id}`}>
                         Change role
                       </label>
-                      <select
-                        id={`role-${user._id}`}
-                        className="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                        value={user.role}
-                        onChange={handleRoleChange}
-                      >
-                        <option value="student">Student</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          id={`role-${user._id}`}
+                          className="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          value={user.role}
+                          onChange={(e) =>
+                            handleRoleChange(user._id, e.target.value)
+                          }
+                          disabled={changeRoleMutation.isPending}
+                        >
+                          <option value="student">Student</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        {changeRoleMutation.isPending && (
+                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <div className="animate-spin h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
