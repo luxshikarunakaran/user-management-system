@@ -15,10 +15,11 @@ export default function Home() {
 
         {/* Description */}
         <p className="text-lg sm:text-xl leading-relaxed text-white/90 mb-10">
-          A clean, role-based platform where admins manage users, roles, and
-          permissions, while students access their personal dashboards and
-          notes. Built with React, Tailwind CSS, and React Query — fast,
-          accessible, and easy to extend.
+          A simple and secure platform designed to streamline user management
+          for both administrators and students. Administrators can easily manage
+          users, assign roles, and oversee system activities, while students can
+          access personalized dashboards, organize their notes, and stay engaged
+          with their learning progress — all in one place.
         </p>
 
         {/* Buttons */}
