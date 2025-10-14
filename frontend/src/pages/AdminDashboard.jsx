@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "../services/userService";
 
 // Simple inline SVG icons (no external packages)
 const IconUsers = (props) => (
@@ -52,15 +54,15 @@ const IconSearch = (props) => (
   </svg>
 );
 
-const initialUsers = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "admin" },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "student" },
-  { id: 3, name: "Alice Johnson", email: "alice@example.com", role: "admin" },
-];
-
 export default function AdminDashboard() {
-  const [users, setUsers] = useState(initialUsers);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["users", "list"],
+    queryFn: userService.list,
+  });
+
+  const users = data?.users || [];
 
   const filteredUsers = useMemo(() => {
     const q = searchTerm.toLowerCase();
@@ -79,11 +81,42 @@ export default function AdminDashboard() {
     [users]
   );
 
-  const handleRoleChange = (id, value) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, role: value } : u))
-    );
+  const handleRoleChange = () => {
+    // This will be handled by the Users page component
+    // For now, we'll just show a message
+    alert("Role changes should be made from the Users page");
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50">
+        <div className="mx-auto max-w-7xl p-6 lg:p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded-2xl"></div>
+              ))}
+            </div>
+            <div className="h-96 bg-gray-200 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="bg-gray-50">
+        <div className="mx-auto max-w-7xl p-6 lg:p-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            Failed to load users: {error?.message || "Unknown error"}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">
@@ -172,7 +205,7 @@ export default function AdminDashboard() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {user.name}
                     </td>
@@ -190,16 +223,14 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <label className="sr-only" htmlFor={`role-${user.id}`}>
+                      <label className="sr-only" htmlFor={`role-${user._id}`}>
                         Change role
                       </label>
                       <select
-                        id={`role-${user.id}`}
+                        id={`role-${user._id}`}
                         className="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value)
-                        }
+                        onChange={handleRoleChange}
                       >
                         <option value="student">Student</option>
                         <option value="admin">Admin</option>

@@ -1,18 +1,43 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { authService } from "../services/authService";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock registration
-    alert("Account created successfully! Please sign in.");
-    navigate("/login");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await authService.register({
+        name,
+        email,
+        password,
+        role,
+      });
+
+      if (response.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,6 +79,18 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              Account created successfully! Redirecting to login...
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Name */}
           <div>
             <label
@@ -69,7 +106,8 @@ export default function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              disabled={loading}
+              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -88,7 +126,8 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              disabled={loading}
+              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -107,7 +146,8 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              disabled={loading}
+              className="h-11 w-full rounded-lg border border-gray-300 px-3 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -123,7 +163,8 @@ export default function Register() {
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              disabled={loading}
+              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="student">Student</option>
               <option value="admin">Admin</option>
@@ -133,9 +174,36 @@ export default function Register() {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full h-11 mt-2 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition"
+            disabled={loading}
+            className="w-full h-11 mt-2 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Create Account
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 

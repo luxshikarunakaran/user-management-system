@@ -1,11 +1,17 @@
 import React, { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { noteService } from "../services/noteService";
 
 export default function StudentDashboard() {
-  // Mock current user
-  const currentUser = { id: 1, name: "John Doe", email: "john@example.com" };
+  const qc = useQueryClient();
 
-  // Notes state (start empty; filled by user)
-  const [notes, setNotes] = useState([]); // {id, userId, title, content, createdAt, updatedAt}
+  // Fetch notes from API
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["notes"],
+    queryFn: noteService.list,
+  });
+
+  const notes = data?.notes || [];
 
   // UI state
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,21 +24,51 @@ export default function StudentDashboard() {
   const [editingNote, setEditingNote] = useState(null);
 
   // Derived lists
-  const userNotes = useMemo(
-    () => notes.filter((n) => n.userId === currentUser.id),
-    [notes, currentUser.id]
-  );
-
   const filteredNotes = useMemo(() => {
     const q = searchTerm.toLowerCase();
-    return userNotes.filter(
+    return notes.filter(
       (n) =>
         n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)
     );
-  }, [userNotes, searchTerm]);
+  }, [notes, searchTerm]);
 
-  // Helpers
-  const nowISO = () => new Date().toISOString();
+  // Create note mutation
+  const createNote = useMutation({
+    mutationFn: noteService.create,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notes"] });
+      setNewNote({ title: "", content: "" });
+      setIsCreateOpen(false);
+    },
+    onError: () => {
+      alert("Failed to create note. Please try again.");
+    },
+  });
+
+  // Update note mutation
+  const updateNote = useMutation({
+    mutationFn: ({ id, data }) => noteService.update(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notes"] });
+      setEditingNote(null);
+      setIsEditOpen(false);
+    },
+    onError: () => {
+      alert("Failed to update note. Please try again.");
+    },
+  });
+
+  // Delete note mutation
+  const deleteNote = useMutation({
+    mutationFn: noteService.remove,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notes"] });
+      setDeleteNoteId(null);
+    },
+    onError: () => {
+      alert("Failed to delete note. Please try again.");
+    },
+  });
 
   // Handlers
   const handleCreateNote = () => {
@@ -40,18 +76,10 @@ export default function StudentDashboard() {
       alert("Please fill in all fields");
       return;
     }
-    const note = {
-      id: crypto.randomUUID(),
-      userId: currentUser.id,
+    createNote.mutate({
       title: newNote.title.trim(),
       content: newNote.content.trim(),
-      createdAt: nowISO(),
-      updatedAt: nowISO(),
-    };
-    setNotes((prev) => [note, ...prev]);
-    setNewNote({ title: "", content: "" });
-    setIsCreateOpen(false);
-    alert("Note created successfully");
+    });
   };
 
   const handleUpdateNote = () => {
@@ -61,29 +89,46 @@ export default function StudentDashboard() {
       alert("Please fill in all fields");
       return;
     }
-    setNotes((prev) =>
-      prev.map((n) =>
-        n.id === editingNote.id
-          ? {
-              ...n,
-              title: title.trim(),
-              content: content.trim(),
-              updatedAt: nowISO(),
-            }
-          : n
-      )
-    );
-    setIsEditOpen(false);
-    setEditingNote(null);
-    alert("Note updated successfully");
+    updateNote.mutate({
+      id: editingNote._id,
+      data: {
+        title: title.trim(),
+        content: content.trim(),
+      },
+    });
   };
 
   const handleDeleteNote = () => {
     if (!deleteNoteId) return;
-    setNotes((prev) => prev.filter((n) => n.id !== deleteNoteId));
-    setDeleteNoteId(null);
-    alert("Note deleted successfully");
+    deleteNote.mutate(deleteNoteId);
   };
+
+  // Loading and error states
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50">
+        <div className="mx-auto max-w-6xl space-y-8 animate-[fadeIn_0.25s_ease-out]">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
+            <div className="h-96 bg-gray-200 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="bg-gray-50">
+        <div className="mx-auto max-w-6xl space-y-8 animate-[fadeIn_0.25s_ease-out]">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            Failed to load notes: {error?.message || "Unknown error"}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Icons (inline SVGs)
   const IconPlus = (props) => (
@@ -211,7 +256,7 @@ export default function StudentDashboard() {
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredNotes.map((note, index) => (
                   <div
-                    key={note.id}
+                    key={note._id}
                     className="rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition hover:-translate-y-0.5"
                     style={{
                       animation: `fadeIn 0.25s ease-out ${index * 0.04}s both`,
@@ -241,7 +286,7 @@ export default function StudentDashboard() {
                           <IconEdit className="h-4 w-4" /> Edit
                         </button>
                         <button
-                          onClick={() => setDeleteNoteId(note.id)}
+                          onClick={() => setDeleteNoteId(note._id)}
                           className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 hover:bg-red-50 hover:border-red-300 transition"
                         >
                           <IconTrash className="h-4 w-4" /> Delete
