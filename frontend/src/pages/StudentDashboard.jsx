@@ -1,6 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { noteService } from "../services/noteService";
+import {
+  IconPlus,
+  IconSearch,
+  IconEdit,
+  IconTrash,
+  IconBook,
+} from "../icons/index.jsx";
+import { Alert, LoadingState } from "../components/ui";
 
 export default function StudentDashboard() {
   const qc = useQueryClient();
@@ -11,7 +19,7 @@ export default function StudentDashboard() {
     queryFn: noteService.list,
   });
 
-  const notes = data?.notes || [];
+  const notes = useMemo(() => data?.notes || [], [data?.notes]);
 
   // UI state
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,11 +116,7 @@ export default function StudentDashboard() {
     return (
       <div className="bg-gray-50">
         <div className="mx-auto max-w-6xl space-y-8 animate-[fadeIn_0.25s_ease-out]">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="h-96 bg-gray-200 rounded-2xl"></div>
-          </div>
+          <LoadingState showMessage={false} />
         </div>
       </div>
     );
@@ -122,80 +126,13 @@ export default function StudentDashboard() {
     return (
       <div className="bg-gray-50">
         <div className="mx-auto max-w-6xl space-y-8 animate-[fadeIn_0.25s_ease-out]">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <Alert type="error">
             Failed to load notes: {error?.message || "Unknown error"}
-          </div>
+          </Alert>
         </div>
       </div>
     );
   }
-
-  // Icons (inline SVGs)
-  const IconPlus = (props) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-  const IconSearch = (props) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
-    </svg>
-  );
-  const IconEdit = (props) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <path d="M12 20h9" />
-      <path
-        d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-  const IconTrash = (props) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" strokeLinecap="round" />
-      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-  const IconBook = (props) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M4 4v15.5A2.5 2.5 0 0 0 6.5 22h13.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" />
-    </svg>
-  );
 
   return (
     <div className="bg-gray-50">

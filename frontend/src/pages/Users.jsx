@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/userService";
+import { IconSearch, IconTrash } from "../icons/index.jsx";
+import { Alert } from "../components/ui";
 
 export default function Users() {
   const qc = useQueryClient();
@@ -58,7 +60,7 @@ export default function Users() {
   const [search, setSearch] = useState("");
   const [confirmId, setConfirmId] = useState(null);
 
-  const users = data?.users || [];
+  const users = useMemo(() => data?.users || [], [data?.users]);
   const filtered = useMemo(() => {
     const term = search.toLowerCase().trim();
     if (!term) return users;
@@ -70,20 +72,6 @@ export default function Users() {
   }, [users, search]);
 
   // Inline SVGs (no icon library)
-  const IconSearch = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <circle cx="11" cy="11" r="8" strokeWidth="2" />
-      <path d="M21 21l-4.3-4.3" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-  const IconTrash = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <polyline points="3 6 5 6 21 6" strokeWidth="2" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" strokeWidth="2" />
-      <path d="M10 11v6M14 11v6" strokeWidth="2" strokeLinecap="round" />
-      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" strokeWidth="2" />
-    </svg>
-  );
 
   if (isLoading) {
     return (
@@ -110,11 +98,10 @@ export default function Users() {
     return (
       <div className="p-6 max-w-6xl mx-auto">
         <Header />
-        <div className="mt-4 text-red-700 bg-red-50 border border-red-200 p-4 rounded-xl">
-          Failed to load users:{" "}
-          <span className="font-medium">
-            {error?.message || "Unknown error"}
-          </span>
+        <div className="mt-4">
+          <Alert type="error">
+            Failed to load users: {error?.message || "Unknown error"}
+          </Alert>
         </div>
       </div>
     );

@@ -1,58 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/userService";
-
-// Simple inline SVG icons (no external packages)
-const IconUsers = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    {...props}
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const IconUserCog = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    {...props}
-  >
-    <path d="M18 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-    <circle cx="10" cy="7" r="4" />
-    <path d="M23 11l-1.5.3a2 2 0 0 1-.5 1.1l.9 1.2-1.4 1.4-1.2-.9a2 2 0 0 1-1.1.5L17 17l-.3-1.5a2 2 0 0 1-1.1-.5l-1.2.9-1.4-1.4.9-1.2a2 2 0 0 1-.5-1.1L12 11l1.5-.3a2 2 0 0 1 .5-1.1l-.9-1.2L14.5 7l1.2.9a2 2 0 0 1 1.1-.5L17 6l.3 1.5a2 2 0 0 1 1.1.5l1.2-.9L21 8.5l-.9 1.2c.24.32.41.7.5 1.1L23 11z" />
-  </svg>
-);
-
-const IconSearch = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-    {...props}
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="M21 21l-4.3-4.3" />
-  </svg>
-);
+import { IconUsers, IconUserCog, IconSearch } from "../icons/index.jsx";
+import { Alert, LoadingState } from "../components/ui";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,7 +12,7 @@ export default function AdminDashboard() {
     queryFn: userService.list,
   });
 
-  const users = data?.users || [];
+  const users = useMemo(() => data?.users || [], [data?.users]);
 
   const filteredUsers = useMemo(() => {
     const q = searchTerm.toLowerCase();
@@ -91,16 +41,7 @@ export default function AdminDashboard() {
     return (
       <div className="bg-gray-50">
         <div className="mx-auto max-w-7xl p-6 lg:p-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-2xl"></div>
-              ))}
-            </div>
-            <div className="h-96 bg-gray-200 rounded-2xl"></div>
-          </div>
+          <LoadingState />
         </div>
       </div>
     );
@@ -110,9 +51,9 @@ export default function AdminDashboard() {
     return (
       <div className="bg-gray-50">
         <div className="mx-auto max-w-7xl p-6 lg:p-8">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <Alert type="error">
             Failed to load users: {error?.message || "Unknown error"}
-          </div>
+          </Alert>
         </div>
       </div>
     );

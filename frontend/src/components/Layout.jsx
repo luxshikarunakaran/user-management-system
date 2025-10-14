@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { logout } from "../features/auth/authSlice";
+import {
+  IconCap,
+  IconUser,
+  IconLogout,
+  IconDashboard,
+} from "../icons/index.jsx";
 
 export default function Layout() {
   const currentUser = useAppSelector((state) => state.auth.user);
@@ -41,35 +47,6 @@ export default function Layout() {
     alert("Logged out successfully");
     navigate("/login");
   };
-
-  // Inline SVG icons (no packages)
-  const IconCap = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <path d="M22 10 12 4 2 10l10 6 10-6z" strokeWidth="2" />
-      <path d="M6 12v5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-5" strokeWidth="2" />
-    </svg>
-  );
-  const IconUser = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2" />
-      <circle cx="12" cy="7" r="4" strokeWidth="2" />
-    </svg>
-  );
-  const IconLogout = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeWidth="2" />
-      <path d="M16 17l5-5-5-5" strokeWidth="2" strokeLinecap="round" />
-      <path d="M21 12H9" strokeWidth="2" />
-    </svg>
-  );
-  const IconDashboard = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
-      <rect x="3" y="3" width="7" height="7" strokeWidth="2" />
-      <rect x="14" y="3" width="7" height="7" strokeWidth="2" />
-      <rect x="14" y="14" width="7" height="7" strokeWidth="2" />
-      <rect x="3" y="14" width="7" height="7" strokeWidth="2" />
-    </svg>
-  );
 
   const avatarLetter =
     (currentUser?.name && currentUser.name.trim()[0]?.toUpperCase()) || "U";
