@@ -138,7 +138,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 p-6">
       <div className="mx-auto max-w-6xl space-y-8 animate-[fadeIn_0.25s_ease-out]">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-[slideUp_0.25s_ease-out]">

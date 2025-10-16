@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="space-y-2 animate-[fadeIn_0.3s_ease-out]">
