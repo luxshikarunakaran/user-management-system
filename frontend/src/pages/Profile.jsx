@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/hooks";
 import { Alert, Button, Input } from "../components/ui";
+import authService from "../services/authService";
+import { setCredentials } from "../features/auth/authSlice";
 
 export default function Profile() {
   const currentUser = useAppSelector((state) => state.auth.user);
@@ -9,6 +12,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (currentUser) {
@@ -24,12 +28,28 @@ export default function Profile() {
     setSuccess("");
 
     try {
-      // For now, we'll just show success since there's no profile update endpoint
-      // In a real app, you'd call an API to update the profile
+      const payload = { name, email };
+      const result = await authService.updateProfile(payload);
+      if (result?.user) {
+        // Update redux auth state while preserving token from localStorage
+        const stored = localStorage.getItem("auth");
+        let token = null;
+        if (stored) {
+          try {
+            token = JSON.parse(stored)?.token || null;
+          } catch {
+            token = null;
+          }
+        }
+        if (token) dispatch(setCredentials({ token, user: result.user }));
+      }
       setSuccess("Profile updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
-    } catch {
-      setError("Failed to update profile. Please try again.");
+    } catch (err) {
+      const msg =
+        err?.response?.data?.error ||
+        "Failed to update profile. Please try again.";
+      setError(msg);
     } finally {
       setLoading(false);
     }

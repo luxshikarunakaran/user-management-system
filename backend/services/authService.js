@@ -24,3 +24,25 @@ export async function login({ email, password }) {
     token,
   };
 }
+
+export async function updateProfile(userId, { name, email, password }) {
+  const user = await User.findById(userId).select("+password");
+  if (!user) throw errors.notFound("User not found");
+
+  if (email && email !== user.email) {
+    const exists = await User.findOne({ email });
+    if (exists && String(exists._id) !== String(userId)) {
+      throw errors.conflict("Email already in use");
+    }
+    user.email = email;
+  }
+
+  if (name) user.name = name;
+  if (password) user.password = password; // will be hashed by pre-save hook
+
+  await user.save();
+
+  return {
+    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+  };
+}

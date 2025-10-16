@@ -21,3 +21,12 @@ export async function login(req, res, next) {
 export async function profile(req, res) {
   res.json({ success: true, user: req.user });
 }
+
+export async function updateProfile(req, res, next) {
+  try {
+    const result = await authService.updateProfile(req.user.id, req.body);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
