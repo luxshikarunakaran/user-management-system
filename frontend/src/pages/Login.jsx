@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../store/hooks";
 import { setCredentials } from "../features/auth/authSlice";
 import { authService } from "../services/authService";
-import { Alert, Button, Input, LoadingSpinner } from "../components/ui";
+import { Alert, Button, Input, LoadingSpinner, toast } from "../components/ui";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -45,12 +45,14 @@ export default function Login() {
             ? "/admin/dashboard"
             : "/student/dashboard";
 
+        toast.success("Logged in successfully");
         navigate(dashboardPath);
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again."
-      );
+      const msg =
+        err.response?.data?.message || "Login failed. Please try again.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/userService";
 import { IconUsers, IconUserCog, IconSearch } from "../icons/index.jsx";
-import { Alert, LoadingState, Button } from "../components/ui";
+import { Alert, LoadingState, Button, toast } from "../components/ui";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,13 +41,15 @@ export default function AdminDashboard() {
       // Refetch users list after successful role change
       queryClient.invalidateQueries({ queryKey: ["users", "list"] });
       setErrorMessage(""); // Clear any previous error
+      toast.success("Role updated");
     },
     onError: (error) => {
       console.error("Failed to change user role:", error);
-      setErrorMessage(
+      const msg =
         error?.response?.data?.message ||
-          "Failed to change user role. Please try again."
-      );
+        "Failed to change user role. Please try again.";
+      setErrorMessage(msg);
+      toast.error(msg);
     },
   });
 

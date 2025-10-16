@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/hooks";
-import { Alert, Button, Input } from "../components/ui";
+import { Alert, Button, Input, toast } from "../components/ui";
 import authService from "../services/authService";
 import { setCredentials } from "../features/auth/authSlice";
 
@@ -44,12 +44,14 @@ export default function Profile() {
         if (token) dispatch(setCredentials({ token, user: result.user }));
       }
       setSuccess("Profile updated successfully!");
+      toast.success("Profile updated");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       const msg =
         err?.response?.data?.error ||
         "Failed to update profile. Please try again.";
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

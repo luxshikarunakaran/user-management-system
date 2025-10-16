@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { store } from "./store.js";
 import "./index.css";
+import { ToastContainer } from "./components/ui";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <App />
+          <>
+            <ToastContainer />
+            <App />
+          </>
         </BrowserRouter>
       </QueryClientProvider>
     </Provider>

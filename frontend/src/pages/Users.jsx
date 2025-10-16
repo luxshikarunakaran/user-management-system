@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/userService";
 import { IconSearch, IconTrash } from "../icons/index.jsx";
-import { Alert } from "../components/ui";
+import { Alert, toast } from "../components/ui";
 
 export default function Users() {
   const qc = useQueryClient();
@@ -27,9 +27,12 @@ export default function Users() {
       });
       return { prev };
     },
+    onSuccess: () => {
+      toast.success("Role updated");
+    },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(["users", "list"], ctx.prev);
-      alert("Failed to change role. Please try again.");
+      toast.error("Failed to change role. Please try again.");
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["users", "list"] });
@@ -48,9 +51,12 @@ export default function Users() {
       });
       return { prev };
     },
+    onSuccess: () => {
+      toast.success("User deleted");
+    },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(["users", "list"], ctx.prev);
-      alert("Failed to delete user. Please try again.");
+      toast.error("Failed to delete user. Please try again.");
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["users", "list"] });

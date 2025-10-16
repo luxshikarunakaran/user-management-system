@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../services/authService";
-import { Alert, Button, Input } from "../components/ui";
+import { Alert, Button, Input, toast } from "../components/ui";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -27,14 +27,16 @@ export default function Register() {
 
       if (response.success) {
         setSuccess(true);
+        toast.success("Account created successfully");
         setTimeout(() => {
           navigate("/login");
-        }, 2000);
+        }, 1500);
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      const msg =
+        err.response?.data?.message || "Registration failed. Please try again.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

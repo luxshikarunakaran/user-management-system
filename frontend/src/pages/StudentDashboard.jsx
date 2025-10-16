@@ -8,7 +8,7 @@ import {
   IconTrash,
   IconBook,
 } from "../icons/index.jsx";
-import { Alert, LoadingState } from "../components/ui";
+import { Alert, LoadingState, toast } from "../components/ui";
 
 export default function StudentDashboard() {
   const qc = useQueryClient();
@@ -47,9 +47,10 @@ export default function StudentDashboard() {
       qc.invalidateQueries({ queryKey: ["notes"] });
       setNewNote({ title: "", content: "" });
       setIsCreateOpen(false);
+      toast.success("Note created");
     },
     onError: () => {
-      alert("Failed to create note. Please try again.");
+      toast.error("Failed to create note. Please try again.");
     },
   });
 
@@ -60,9 +61,10 @@ export default function StudentDashboard() {
       qc.invalidateQueries({ queryKey: ["notes"] });
       setEditingNote(null);
       setIsEditOpen(false);
+      toast.success("Note updated");
     },
     onError: () => {
-      alert("Failed to update note. Please try again.");
+      toast.error("Failed to update note. Please try again.");
     },
   });
 
@@ -72,16 +74,17 @@ export default function StudentDashboard() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["notes"] });
       setDeleteNoteId(null);
+      toast.success("Note deleted");
     },
     onError: () => {
-      alert("Failed to delete note. Please try again.");
+      toast.error("Failed to delete note. Please try again.");
     },
   });
 
   // Handlers
   const handleCreateNote = () => {
     if (!newNote.title.trim() || !newNote.content.trim()) {
-      alert("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
     createNote.mutate({
@@ -94,7 +97,7 @@ export default function StudentDashboard() {
     if (!editingNote) return;
     const { title, content } = editingNote;
     if (!title.trim() || !content.trim()) {
-      alert("Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
     updateNote.mutate({

@@ -8,6 +8,7 @@ import {
   IconLogout,
   IconDashboard,
 } from "../icons/index.jsx";
+import { toast } from "./ui";
 
 export default function Layout() {
   const currentUser = useAppSelector((state) => state.auth.user);
@@ -44,7 +45,7 @@ export default function Layout() {
 
   const handleLogout = () => {
     dispatch(logout());
-    alert("Logged out successfully");
+    toast.success("Logged out successfully");
     navigate("/login");
   };
 
