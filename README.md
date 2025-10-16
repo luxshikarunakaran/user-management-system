@@ -151,3 +151,42 @@ You’re ready to go. Start backend first, then frontend.
 <img width="496" height="754" alt="Screenshot 2025-10-16 at 12 27 37 PM" src="https://github.com/user-attachments/assets/b64cb42d-feff-45b1-858f-78511509f3b1" />
 <img width="496" height="754" alt="Screenshot 2025-10-16 at 12 27 56 PM" src="https://github.com/user-attachments/assets/32774c42-3b7a-4150-ba96-a69faa991951" />
 <img width="496" height="754" alt="Screenshot 2025-10-16 at 12 28 20 PM" src="https://github.com/user-attachments/assets/a06b7be8-87c0-4809-86c3-885e0d3fd038" />
+
+
+
+### 11) Written Questionnaire
+
+1. Design Patterns
+
+   - A design pattern is a reusable solution to a common software design problem. In this project, we use a layered architecture plus the Service pattern on the backend: `controllers` handle HTTP concerns (validation, status codes), while `services` encapsulate business logic and data access. Example: `authController.updateProfile` delegates to `authService.updateProfile`, keeping controllers thin and logic testable and reusable.
+
+2. Data Transfer Objects (DTOs)
+
+   - A DTO is a simple object used to carry data between layers or over the network, without behavior. They are useful to define exactly what data crosses boundaries, avoid over-exposing model fields (e.g., password hash), and provide a stable API contract. Example here: responses return `{ id, name, email, role }` for users instead of raw Mongoose documents with internal fields.
+
+3. Security Best Practices
+
+   - Secrets (API keys, DB URIs, JWT secrets) should never be hardcoded. Store them in environment variables (e.g., `backend/.env`) and load with `dotenv`. Do not commit `.env` to version control; use `.env.example` to document required keys. For production, inject secrets via your hosting platform’s secret manager (e.g., Docker secrets, Kubernetes secrets, Vercel/Render/Heroku config vars). Rotate keys regularly and scope least privilege (e.g., DB user with minimal rights).
+
+4. Authentication (JWT)
+
+   - JWT authentication issues a signed token to the client after login. The client includes the token in the `Authorization: Bearer <token>` header on each request. The server verifies the signature (using `JWT_SECRET`) and trusts the claims (e.g., user id, role) without querying a session store, making the system stateless and scalable. JWT fits this app because it’s API-first, stateless, and needs to propagate role information (admin/student) efficiently.
+
+5. Database Comparison (SQL vs NoSQL)
+
+   - SQL (relational): strong schema, ACID transactions, complex joins, ideal for normalized data and strict consistency. Examples: Postgres, MySQL.
+   - NoSQL (document/Key-Value/columnar/graph): flexible schema, horizontal scaling, often eventual consistency, great for nested documents and fast iteration. Example: MongoDB (document).
+   - Choice: MongoDB was chosen for this task due to quick iteration with flexible schemas (users, notes), simple embedding of note fields, and strong Node.js tooling (Mongoose). For small-to-medium CRUD apps with evolving schemas, MongoDB speeds development.
+
+6. State Management (Frontend)
+
+   - Redux Toolkit is used for authentication state (token, user) because it provides a predictable, serializable store and good dev tooling. React Query (`@tanstack/react-query`) manages server state (users, notes) with caching, retries, and invalidation, which is superior to hand-rolled Redux async for data fetching. This combination keeps local app state and server cache concerns separate and maintainable.
+
+7. Real-Time Features (Bonus)
+
+   - If using WebSockets, the server keeps a persistent bidirectional connection to the client, pushing updates as events occur (e.g., new notes, role changes) instead of polling. Advantages: lower latency, fewer redundant requests, immediate UI updates. While this project uses HTTP requests, adding Socket.IO channels (e.g., `notes:updated`) would allow instant synchronization across sessions without manual refresh.
+
+8. Testing Approach
+   - Backend: Use Jest (or Vitest) with supertest to write unit tests for services (pure functions, business rules) and integration tests for controllers/routes (HTTP, auth middleware). Mock external dependencies (e.g., JWT, DB) for unit tests; use a test database (or in-memory Mongo like `mongodb-memory-server`) for integration tests.
+   - Frontend: Use React Testing Library + Vitest/Jest. Unit test components (render states, interactions), mock API calls with MSW, and test React Query flows (loading/error/success). For critical flows (login, CRUD notes), add a few Playwright/Cypress E2E tests to validate end-to-end behavior in a real browser.
+
